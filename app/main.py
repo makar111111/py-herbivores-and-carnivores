@@ -1,14 +1,13 @@
 class Animal:
-    alive = []  # атрибут КЛАСУ — спільний для всіх
+    alive: list["Animal"] = []  # ← виправлено: type annotation (checklist #9)
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, health: int = 100) -> None:
         self.name = name
-        self.health = 100
+        self.health = health  # ← тепер приймає health ззовні, або 100 за замовч.
         self.hidden = False
-        Animal.alive.append(self)  # додаємо себе до списку живих
+        Animal.alive.append(self)
 
     def __repr__(self) -> str:
-        # магічний метод — як виглядає об'єкт при print()
         return (
             f"{{Name: {self.name}, "
             f"Health: {self.health}, "
@@ -17,13 +16,18 @@ class Animal:
 
 
 class Herbivore(Animal):
+    def __init__(self, name: str, health: int = 100) -> None:
+        super().__init__(name, health)  # ← передаємо обидва в батька
+
     def hide(self) -> None:
-        self.hidden = not self.hidden  # True → False → True → ...
+        self.hidden = not self.hidden
 
 
 class Carnivore(Animal):
+    def __init__(self, name: str, health: int = 100) -> None:
+        super().__init__(name, health)  # ← те саме для Carnivore
+
     def bite(self, other: Animal) -> None:
-        # кусаємо тільки Herbivore і тільки якщо не ховається
         if not isinstance(other, Herbivore):
             return
         if other.hidden:
@@ -31,7 +35,6 @@ class Carnivore(Animal):
 
         other.health -= 50
 
-        # якщо здоров'я впало до 0 або нижче — тварина вмирає
         if other.health <= 0:
             other.health = 0
             Animal.alive.remove(other)
